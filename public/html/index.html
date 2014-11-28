@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="../../favicon.ico">
+
+    <title>Radar Brewing Company</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="//maxcdn.bootstrapcdn.com/bootswatch/3.2.0/flatly/bootstrap.min.css" rel="stylesheet">
+    <link href="//maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Custom styles -->
+    <style>
+        body {
+            min-height: 2000px;
+            padding-top: 70px;
+        }
+        #shutdown-message {
+            display: none;
+        }
+     </style>
+  </head>
+
+  <body>
+    
+    <!-- Fixed navbar -->
+    <div class="navbar navbar-default navbar-fixed-top" role="navigation">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="#"><i class="fa fa-wifi"></i>&nbsp;Radar Brewing</a>
+        </div>
+        <div class="navbar-collapse collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="#">Dashboard</a></li>
+            <li><a href="#about">Calendar</a></li>
+          </ul>
+          <ul class="nav navbar-nav navbar-right">
+            <li id="configure"><a href="#configure" data-toggle="modal" data-target="#configuration_modal"><i class="fa fa-gears" ></i>&nbsp;&nbsp;Configure</a></li>
+            <li id="shut-down"><a href="#shutdown" data-toggle="modal" data-target="#shutdown_modal"><i class="fa fa-power-off" ></i>&nbsp;&nbsp;Shut Down</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </div>
+
+    <!-- shutdown modal -->
+    <div class="modal fade" id="shutdown_modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title"><i class="fa fa-warning"></i>&nbsp;&nbsp;&nbsp;Shutdown</h4>
+                </div>
+                <div class="modal-body">
+                    <p id="shutdown-warning">Are you sure you want to shut down the system?  This will stop all temperature regulation and monitoring.</p>
+                    <h4 id="shutdown-message">The system is shutting down. Please wait 10 seconds and then power down the brew system.</h4>
+                </div>
+
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" id="shutdown">Yes</button>
+                    <button type="button" class="btn btn-default" id="dismiss-shutdown" data-dismiss="modal">No</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+
+    <!-- configuration modal -->
+    <div class="modal fade" id="configuration_modal">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <h4 class="modal-title">Confguration Settings</h4>
+                </div>
+                <div class="modal-body">
+
+                    <!-- temperature probes -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Temperature Probes</h3>
+                        </div>
+                        <div class="panel-body">
+
+                            <div class="form-group">
+                                <label for="hltTempProbe">Hot Liquor Tank</label>
+                                <select class="form-control" id="hltTempProbe"></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="mtTempProbe">Mash Tun</label>
+                                <select class="form-control" id="mtTempProbe"></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="bkTempProbe">Boil Kettle</label>
+                                <select class="form-control" id="bkTempProbe"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- PID Tuning Parameters -->
+                    <div class="panel panel-default">
+                        <div class="panel-heading">
+                            <h3 class="panel-title">PID Tuning Parameters</h3>
+                        </div>
+                        <div class="panel-body">
+
+                            <div id="Kp_form_group" class="form-group">
+                                <label for="Kp">Kp</label>
+                                <input class="form-control" id="Kp" placeholder="25">
+                            </div>
+                            <div id="Ki_form_group" class="form-group">
+                                <label for="Ki">Ki</label>
+                                <input class="form-control" id="Ki" placeholder="1000">
+                            </div>
+                            <div id="Kd_form_group" class="form-group">
+                                <label for="Kd">Kd</label>
+                                <input class="form-control" id="Kd" placeholder="9">
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div id="config-save-success" class="panel panel-default  show">
+                        <div class="panel-body bg-success">
+                            Your changes have been saved successfully.
+                        </div>
+                    </div>
+
+                    <div id="config-save-error" class="panel panel-default  show">
+                        <div class="panel-body bg-danger">
+                            There was an error saving your changes.
+                        </div>
+                    </div>
+
+                    <div id="validation-not-unique-error" class="panel panel-default  show">
+                        <div class="panel-body bg-danger">
+                            Each vessel must have a unique temperature probe assigned.  Please ensure uniqueness, or remove the probe from the vessel.
+                        </div>
+                    </div>
+
+
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="save-configuration">Save changes</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+    
+
+
+    <!-- main body content -->
+    <div class="container">
+
+        <div class="row">
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h4>Hot Liquor Tank</h4></div>
+                    <div class="panel-body">
+                        <div id="hlt_gauge_div" class="center-block" style="width:200px;height:200px"></div>
+                        <hr/>
+                        <div id="reg_hlt_input_group" class="form-group">
+                            <h4 class="control-label"><i id="reg_hlt_spinner" class="fa fa-circle-o-notch" ></i>&nbsp;&nbsp;Regulate Temperature</h4>
+                            <input type="text" class="form-control" id="hlt_set_point" placeholder="Set Point (°F)">
+                        </div>
+                        <div class="btn-group" id="hlt_regulate_toggle" style="padding-top:5px">
+                            <button type="button" class="btn btn-default">ON</button>
+                            <button type="button" class="btn btn-primary active">OFF</button>
+                        </div>
+                        <hr />
+                        <h4><i id="burner_hlt_spinner" class="fa fa-circle-o-notch" ></i>&nbsp;&nbsp;Burner</h4>
+                        <div class="btn-group" id="hlt_burner_toggle">
+                            <button type="button" class="btn btn-default">ON</button>
+                            <button type="button" class="btn btn-primary active">OFF</button>
+                        </div>
+
+                    </div>
+                </div>
+
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h4>Mash Tun</h4></div>
+                    <div class="panel-body">
+                        <div id="mt_gauge_div" class="center-block" style="width:200px;height:200px"></div>
+                        <hr/>
+                        <div id="reg_mt_input_group" class="form-group">
+                            <h4 class="control-label"><i id="reg_mt_spinner" class="fa fa-circle-o-notch" ></i>&nbsp;&nbsp;Regulate Temperature</h4>
+                            <input type="text" class="form-control" id="mt_set_point" placeholder="Set Point (°F)">
+                        </div>
+                        <div class="btn-group" id="mt_regulate_toggle" style="padding-top:5px">
+                            <button type="button" class="btn btn-default">ON</button>
+                            <button type="button" class="btn btn-primary active">OFF</button>
+                        </div>
+                        <hr />
+                        <h4><i id="burner_mt_spinner" class="fa fa-circle-o-notch" ></i>&nbsp;&nbsp;Burner</h4>
+                        <div class="btn-group" id="mt_burner_toggle">
+                            <button type="button" class="btn btn-default">ON</button>
+                            <button type="button" class="btn btn-primary active">OFF</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h4>Boil Kettle</h4></div>
+                    <div class="panel-body">
+                        <div id="bk_gauge_div" class="center-block" style="width:200px;height:200px"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h4>Pumps</h4></div>
+                    <div class="panel-body container">
+                        <div class="col-md-2">
+                            <h4><i id="left_pump_spinner" class="fa fa-circle-o-notch" ></i>&nbsp;&nbsp;Left</h4>
+                            <div class="btn-group" id="left_pump_toggle">
+                                <button type="button" class="btn btn-default">ON</button>
+                                <button type="button" class="btn btn-primary active">OFF</button>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <h4><i id="right_pump_spinner" class="fa fa-circle-o-notch" ></i>&nbsp;&nbsp;Right</h4>
+                            <div class="btn-group" id="right_pump_toggle">
+                                <button type="button" class="btn btn-default">ON</button>
+                                <button type="button" class="btn btn-primary active">OFF</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h4>Timer</h4></div>
+                    <div class="panel-body container">
+
+                        <form class="form-inline" role="form">
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <label class="sr-only" for="timer_hours">HH</label>
+                                    <div class="input-group-addon">hh</div>
+                                    <input class="form-control" id="timer_hours" placeholder="Hours">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <label class="sr-only" for="timer_minutes">MM</label>
+                                    <div class="input-group-addon">mm</div>
+                                    <input class="form-control" id="timer_minutes" placeholder="Minutes">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="input-group">
+                                    <label class="sr-only" for="timer_seconds">SS</label>
+                                    <div class="input-group-addon">ss</div>
+                                    <input class="form-control" id="timer_seconds" placeholder="Seconds">
+                                </div>
+                            </div>
+
+                            <div class="btn-group" id="timer_toggle">
+                                <button type="button" class="btn btn-default">ON</button>
+                                <button type="button" class="btn btn-primary active">OFF</button>
+                            </div>
+
+                        </form>
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="panel panel-default">
+                    <div class="panel-heading"><h4>Historical Temperatures</h4></div>
+                    <div class="panel-body">
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Hot Liquor Tank</div>
+                            <div class="panel-body">
+                                <div id="hlt_line_div"></div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Mash Tun</div>
+                            <div class="panel-body">
+                                <div id="mt_line_div"></div>
+                            </div>
+                        </div>
+                        <div class="panel panel-default">
+                            <div class="panel-heading">Boil Kettle</div>
+                            <div class="panel-body">
+                                <div id="bk_line_div"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- /container -->
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1/jquery.min.js"></script>
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    <script src="//cdn.socket.io/socket.io-1.0.6.js"></script>
+    <script src="//www.google.com/jsapi"></script>
+    <script src="/javascripts/radar-brewing.js"></script>
+  </body>
+</html>
