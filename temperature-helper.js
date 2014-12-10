@@ -130,12 +130,12 @@ module.exports = {
             mapping = this.getTempProbeMap();
 
         var probeId = mapping[vessel];
-        var temperatureFile = '/mnt/1wire/' + probeId + '/temperature9';
+        var temperatureFile = '/mnt/1wire/uncached/' + probeId + '/temperature10';
 
         var degC = parseFloat(fs.readFileSync(temperatureFile, 'utf8'));
         var degF = degC * (9.0/5.0) + 32;
 
-        degF = Math.round(degF * 10) / 10;
+        degF = Math.round(degF * 100) / 100;
 
         return degF;
 

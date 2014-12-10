@@ -96,6 +96,13 @@ mtPidController.setOutputLimits(0, DUTY_CYCLE);
 
 var init = false;
 
+process.on('SIGINT', function () {
+    console.log('exiting...');
+
+    server.close(function () {
+        process.exit(0);
+    });
+});
 
 io.on('connection', function (socket) {
 
@@ -114,6 +121,7 @@ io.on('connection', function (socket) {
     socket.on('regulate-temp-clicked', function(data) {
 
         appLog.info('%s,%s,%s', 'regulate-temp-clicked', data.vessel, data.newState);
+        dataLog.info('Kp: %s, Ki: %s, Kd: %s', PIDsettings.Kp, PIDsettings.Ki, PIDsettings.Kd);
 
         //start regulating the temp
         if(data.newState == 'on') {
@@ -225,6 +233,9 @@ io.on('connection', function (socket) {
             PIDsettings.Ki = data.PID.Ki;
             PIDsettings.Kd = data.PID.Kd;
 
+            hltPidController.setTunings(PIDsettings.Kp, PIDsettings.Ki, PIDsettings.Kd);
+            mtPidController.setTunings(PIDsettings.Kp, PIDsettings.Ki, PIDsettings.Kd);
+
             socket.emit('save-configuration-status', {
                     status: 'success'
                 }
@@ -298,12 +309,19 @@ function regulateTemperature(vessel, pidController) {
         }, DUTY_CYCLE);
     } else {
 
-        //turn the burner on for the specified amount of time
-        pi.setBurnerState(vessel, 'on');
+        //turn the burner on for the specified amount of time, if it's going to be on for more than 1/2s
+
+        if(onTime > 500) {
+            pi.setBurnerState(vessel, 'on');
+        }
 
         //schedule the burner to be turned off in onTime milliseconds
         setTimeout(function () {
-            pi.setBurnerState(vessel, 'off');
+
+            //turn off if it will be off for longer than 500 ms
+            if(onTime < DUTY_CYCLE - 500) {
+                pi.setBurnerState(vessel, 'off');
+            }
 
             var state = (vessel == 'hlt' ? currentStates.regulateHlt : currentStates.regulateMt);
             if (state == 'on') {
