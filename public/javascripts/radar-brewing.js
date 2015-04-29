@@ -15,17 +15,8 @@ var gaugeOptions = {
 };
 
 
-var lineChartOptions = {
-    vAxis: {minValue:50, maxValue:220},
-    curveType: 'function',
-    legend: {position: 'none'},
-    animation: {
-        duration: 500,
-        easing: 'in'}
-}
-
-var hltGauge, hltLine, mtGauge, mtLine, bkGauge, bkLine;
-var hltGaugeData, mtGaugeData, hltLineData, mtLineData, bkGaugeData, bkLineData;
+var hltGauge, mtGauge, bkGauge;
+var hltGaugeData, mtGaugeData, bkGaugeData;
 
 function initCharts() {
 
@@ -54,29 +45,6 @@ function initCharts() {
 
     bkGauge = new google.visualization.Gauge(document.getElementById('bk_gauge_div'));
     bkGauge.draw(bkGaugeData, gaugeOptions);
-
-    //draw initial line charts
-    hltLine = new google.visualization.LineChart(document.getElementById('hlt_line_div'));
-    
-    hltLineData = new google.visualization.DataTable();
-    hltLineData.addColumn('string', 'Time');
-    hltLineData.addColumn('number', 'Temperature');
-    hltLine.draw(hltLineData, lineChartOptions);
-
-
-    mtLine = new google.visualization.LineChart(document.getElementById('mt_line_div'));
-    
-    mtLineData = new google.visualization.DataTable();
-    mtLineData.addColumn('string', 'Time');
-    mtLineData.addColumn('number', 'Temperature');
-    mtLine.draw(mtLineData, lineChartOptions);
-
-    bkLine = new google.visualization.LineChart(document.getElementById('bk_line_div'));
-    
-    bkLineData = new google.visualization.DataTable();
-    bkLineData.addColumn('string', 'Time');
-    bkLineData.addColumn('number', 'Temperature');
-    bkLine.draw(bkLineData, lineChartOptions);
 
 }
 
@@ -442,27 +410,21 @@ socket.on('temperature', function(temps) {
     if(hltGauge == undefined || temps.vessel == undefined)
         return;
 
-    var gaugeData, gaugeChart, lineData, lineChart;
+    var gaugeData, gaugeChart;
 
     if(temps.vessel == 'hlt') {
         gaugeData = hltGaugeData;
         gaugeChart = hltGauge;
-        lineData = hltLineData;
-        lineChart = hltLine;
     }
 
     if(temps.vessel == 'mt') {
         gaugeData = mtGaugeData;
         gaugeChart = mtGauge;
-        lineData = mtLineData;
-        lineChart = mtLine;
     }
 
     if(temps.vessel == 'bk') {
         gaugeData = bkGaugeData;
         gaugeChart = bkGauge;
-        lineData = bkLineData;
-        lineChart = bkLine;
     }
 
     var currentDate = new Date();
@@ -475,8 +437,6 @@ socket.on('temperature', function(temps) {
     //    lineData.removeRow(0);
     //}
 
-    lineData.addRow([time, parseFloat(temps.temperature)]);
-    lineChart.draw(lineData, lineChartOptions);
 });
 
 function updateOptionsList(probeData, vessel, element) {

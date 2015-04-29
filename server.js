@@ -173,6 +173,7 @@ io.on('connection', function (socket) {
 
     socket.on('timer-clicked', function(data) {
 
+        console.log('starting timer...');
         appLog.info('%s,%s,%s', 'timer-clicked', data.seconds, data.newState);
         if(data.newState == 'on') {
             currentStates.timer = 'on';
@@ -182,6 +183,10 @@ io.on('connection', function (socket) {
             timerHandle = setInterval(function () {
                 clientTimer--;
                 updateTimer(socket);
+
+                if(clientTimer === 0) {
+                    clearInterval(timerHandle);
+                }
             }, 1000);
         } else {
             currentStates.timer = 'off';
