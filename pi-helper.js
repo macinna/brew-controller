@@ -1,4 +1,13 @@
-var wpi = require('wiring-pi');
+var os = require('os');
+var wpi;
+
+if(os.arch() === 'arm') {
+    //running on the pi.  use the actual pins
+    wpi = require('./wiring-pi');
+} else {
+    //running on something else.  use stub.
+    wpi = require('./wiring-pi-stub');
+}
 
 wpi.wiringPiSetupGpio();
 

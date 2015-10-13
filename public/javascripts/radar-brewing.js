@@ -2,7 +2,7 @@ google.load("visualization", "1", {packages:["gauge", "corechart"]});
 google.setOnLoadCallback(initCharts);
 
 
-var socket = io.connect('/');
+var socket = io();
 
 
 var gaugeOptions = {
